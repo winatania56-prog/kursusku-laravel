@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Course;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
@@ -10,6 +11,17 @@ use Tests\TestCase;
 class CourseTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected User $adminUser;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->adminUser = User::factory()->create([
+            'role' => 'admin',
+        ]);
+        $this->actingAs($this->adminUser);
+    }
 
     public function test_courses_all_resource_routes_are_registered(): void
     {

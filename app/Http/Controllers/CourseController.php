@@ -5,15 +5,37 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCourseRequest;
 use App\Http\Requests\UpdateCourseRequest;
 use App\Models\Course;
+use Illuminate\Http\Request;
 
 class CourseController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $courses = Course::latest()->get();
+        $query = Course::query();
+
+        if ($request->filled('search')) {
+            $search = trim($request->input('search'));
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                    ->orWhere('name', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $status = $request->input('status');
+            if (in_array($status, ['open', 'closed', 'draft'], true)) {
+                $query->where('status', $status);
+            }
+        }
+
+        $courses = $query->latest('id')->paginate(10)->withQueryString();
+
+        if ($request->ajax()) {
+            return view('courses.partials.table', compact('courses'));
+        }
 
         return view('courses.index', compact('courses'));
     }

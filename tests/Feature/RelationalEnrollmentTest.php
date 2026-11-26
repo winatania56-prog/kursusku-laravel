@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\Participant;
+use App\Models\User;
 use Database\Seeders\CourseSeeder;
 use Database\Seeders\ParticipantSeeder;
 use Illuminate\Database\QueryException;
@@ -16,11 +17,18 @@ class RelationalEnrollmentTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected User $adminUser;
+
     protected function setUp(): void
     {
         parent::setUp();
         (new CourseSeeder())->run();
         (new ParticipantSeeder())->run();
+
+        $this->adminUser = User::factory()->create([
+            'role' => 'admin',
+        ]);
+        $this->actingAs($this->adminUser);
     }
 
     public function test_enrollments_index_page_loads_and_displays_empty_state_initially(): void
